@@ -1,0 +1,11 @@
+Neos:
+  Media:
+    assetSources:
+      'shutterstock':
+        assetSource: Vette\Shutterstock\Domain\Model\AssetSource\Shutterstock\ShutterstockAssetSource
+        assetSourceOptions:
+          label: Shutterstock Preview
+          clientKey: client-key
+          clientSecret: client-secret
+          queryParams:
+            imageType: photo

@@ -1,0 +1,19 @@
+{
+    "name": "vette/neos-assetsource-shutterstock",
+    "description": "Shutterstock asset source for Neos",
+    "type": "neos-plugin",
+    "require": {
+        "neos/neos": "^4.0",
+        "guzzlehttp/guzzle": "^6.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "Vette\\Shutterstock\\": "Classes/"
+        }
+    },
+    "extra": {
+        "neos": {
+            "package-key": "Vette.Shutterstock"
+        }
+    }
+}
