@@ -1,7 +1,8 @@
 {
     "name": "cvette/neos-assetsource-shutterstock",
-    "description": "Shutterstock asset source for Neos",
+    "description": "Neos Asset Source for https://www.shutterstock.com",
     "type": "neos-plugin",
+    "license": "MIT",
     "require": {
         "neos/neos": "^4.0",
         "guzzlehttp/guzzle": "^6.3"
@@ -12,6 +13,7 @@
         }
     },
     "extra": {
+        "marketplace-account": "neos@christianvette.de",
         "neos": {
             "package-key": "Vette.Shutterstock"
         }
