@@ -1,5 +1,5 @@
 {
-    "name": "vette/neos-assetsource-shutterstock",
+    "name": "cvette/neos-assetsource-shutterstock",
     "description": "Shutterstock asset source for Neos",
     "type": "neos-plugin",
     "require": {
