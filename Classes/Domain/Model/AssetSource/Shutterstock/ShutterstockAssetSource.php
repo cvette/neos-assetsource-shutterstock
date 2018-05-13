@@ -32,6 +32,11 @@ class ShutterstockAssetSource implements AssetSourceInterface
      */
     protected $shutterstockClient;
 
+    /**
+     * @var bool
+     */
+    protected $removeImageIdFromPreview = true;
+
 
     /**
      * ShutterstockAssetSource constructor.
@@ -60,6 +65,10 @@ class ShutterstockAssetSource implements AssetSourceInterface
 
         if (isset($this->assetSourceOptions['queryParams'])) {
             $this->shutterstockClient->setQueryParams($this->assetSourceOptions['queryParams']);
+        }
+
+        if (isset($this->assetSourceOptions['removeImageIdFromPreview'])) {
+            $this->removeImageIdFromPreview = $this->assetSourceOptions['removeImageIdFromPreview'];
         }
 
         $this->shutterstockClient->setClientKey($this->assetSourceOptions['clientKey']);
@@ -126,5 +135,21 @@ class ShutterstockAssetSource implements AssetSourceInterface
     public function isReadOnly(): bool
     {
         return true;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isRemoveImageIdFromPreview(): bool
+    {
+        return $this->removeImageIdFromPreview;
+    }
+
+    /**
+     * @param bool $removeImageDetailsFromPreview
+     */
+    public function setRemoveImageIdFromPreview(bool $removeImageIdFromPreview): void
+    {
+        $this->removeImageIdFromPreview = $removeImageIdFromPreview;
     }
 }

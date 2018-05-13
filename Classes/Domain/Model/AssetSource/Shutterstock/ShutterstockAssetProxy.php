@@ -1,6 +1,9 @@
 <?php
 namespace Vette\Shutterstock\Domain\Model\AssetSource\Shutterstock;
 
+use Imagine\Image\Box;
+use Imagine\Image\ImagineInterface;
+use Imagine\Image\Point;
 use Neos\Flow\Http\Uri;
 use Neos\Media\Domain\Model\AssetSource\AssetProxy\AssetProxyInterface;
 use Neos\Media\Domain\Model\AssetSource\AssetProxy\HasRemoteOriginalInterface;
@@ -8,9 +11,15 @@ use Neos\Media\Domain\Model\AssetSource\AssetSourceInterface;
 use Neos\Media\Domain\Model\ImportedAsset;
 use Neos\Media\Domain\Repository\ImportedAssetRepository;
 use Psr\Http\Message\UriInterface;
+use Neos\Flow\Annotations as Flow;
 
 class ShutterstockAssetProxy implements AssetProxyInterface, HasRemoteOriginalInterface
 {
+    /**
+     * @var ImagineInterface
+     * @Flow\Inject(lazy = false)
+     */
+    protected $imagineService;
 
     /**
      * @var ShutterstockAssetSource
@@ -98,7 +107,34 @@ class ShutterstockAssetProxy implements AssetProxyInterface, HasRemoteOriginalIn
 
     public function getImportStream()
     {
+        if ($this->assetSource->isRemoveImageIdFromPreview()) {
+            return $this->removeImageId();
+        }
+
         return fopen($this->shutterstockData['assets']['preview']['url'], 'r');
+    }
+
+    /**
+     * Crops the image preview so the image Id is not shown
+     *
+     * @return bool|resource
+     */
+    protected function removeImageId()
+    {
+        $fileHandle = fopen($this->shutterstockData['assets']['preview']['url'], 'r');
+        $image = $this->imagineService->read($fileHandle);
+
+        $width = $this->shutterstockData['assets']['preview']['width'];
+        $height = $this->shutterstockData['assets']['preview']['height'];
+
+        $image->crop(new Point(0,0), new Box($width, $height));
+        $string = $image->get('jpg');
+
+        $stream = fopen('php://memory','r+');
+        fwrite($stream, $string);
+        rewind($stream);
+
+        return $stream;
     }
 
     public function getLocalAssetIdentifier(): ?string
