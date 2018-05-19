@@ -12,6 +12,6 @@ This package provides an asset source for *shutterstock.com*. It is limited to p
 
 `removeImageIdFromPreview`: Remove the image Id from preview images when imported. Defaults to `true`
 
-`queryParams`: The following search parameters can be configured at the moment: `imageType`, `category`, `safe`
+`imageSearch`: Configure query parameters for the image search. A full list can be found here: https://developers.shutterstock.com/images/apis/get/images/search
 
 ![Neos Media Browser](https://i.imgur.com/tX8jFk9.png)
