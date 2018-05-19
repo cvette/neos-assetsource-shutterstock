@@ -4,7 +4,6 @@ namespace Vette\Shutterstock\Domain\Model\AssetSource\Shutterstock;
 use Imagine\Image\Box;
 use Imagine\Image\ImagineInterface;
 use Imagine\Image\Point;
-use Neos\Flow\Http\Uri;
 use Neos\Media\Domain\Model\AssetSource\AssetProxy\AssetProxyInterface;
 use Neos\Media\Domain\Model\AssetSource\AssetProxy\HasRemoteOriginalInterface;
 use Neos\Media\Domain\Model\AssetSource\AssetSourceInterface;
@@ -12,7 +11,11 @@ use Neos\Media\Domain\Model\ImportedAsset;
 use Neos\Media\Domain\Repository\ImportedAssetRepository;
 use Psr\Http\Message\UriInterface;
 use Neos\Flow\Annotations as Flow;
+use Vette\Shutterstock\Domain\Model\Shutterstock\Image;
 
+/**
+ * ShutterstockAssetProxy
+ */
 class ShutterstockAssetProxy implements AssetProxyInterface, HasRemoteOriginalInterface
 {
     /**
@@ -32,20 +35,20 @@ class ShutterstockAssetProxy implements AssetProxyInterface, HasRemoteOriginalIn
     private $importedAsset;
 
     /**
-     * @var array
+     * @var Image
      */
-    private $shutterstockData;
+    private $image;
 
 
     /**
      * ShutterstockAssetProxy constructor.
      *
-     * @param array $shutterstockData
+     * @param Image $image
      * @param ShutterstockAssetSource $assetSource
      */
-    public function __construct(array $shutterstockData, ShutterstockAssetSource $assetSource)
+    public function __construct(Image $image, ShutterstockAssetSource $assetSource)
     {
-        $this->shutterstockData = $shutterstockData;
+        $this->image = $image;
         $this->assetSource = $assetSource;
         $this->importedAsset = (new ImportedAssetRepository())->findOneByAssetSourceIdentifierAndRemoteAssetIdentifier($assetSource->getIdentifier(), $this->getIdentifier());
     }
@@ -57,27 +60,27 @@ class ShutterstockAssetProxy implements AssetProxyInterface, HasRemoteOriginalIn
 
     public function getIdentifier(): string
     {
-        return $this->shutterstockData['id'];
+        return $this->image->getId();
     }
 
     public function getLabel(): string
     {
-        return $this->shutterstockData['description'];
+        return $this->image->getDescription();
     }
 
     public function getFilename(): string
     {
-        return basename($this->shutterstockData['assets']['preview']['url']);
+        return basename($this->image->getAssetPreview('preview')->getUrl()->getPath());
     }
 
     public function getLastModified(): \DateTimeInterface
     {
-        return new \DateTime($this->shutterstockData['added_date']);
+        return $this->image->getAddedDate();
     }
 
     public function getFileSize(): int
     {
-        return $this->shutterstockData['assets']['huge_jpg']['file_size'];
+        return 0;
     }
 
     public function getMediaType(): string
@@ -87,22 +90,22 @@ class ShutterstockAssetProxy implements AssetProxyInterface, HasRemoteOriginalIn
 
     public function getWidthInPixels(): ?int
     {
-        return $this->shutterstockData['assets']['huge_jpg']['width'];
+        return $this->image->getAssetPreview('preview')->getWidth();
     }
 
     public function getHeightInPixels(): ?int
     {
-        return $this->shutterstockData['assets']['huge_jpg']['height'];
+        return $this->image->getAssetPreview('preview')->getHeight();
     }
 
     public function getThumbnailUri(): ?UriInterface
     {
-        return new Uri($this->shutterstockData['assets']['huge_thumb']['url']);
+        return $this->image->getAssetPreview('huge_thumb')->getUrl();
     }
 
     public function getPreviewUri(): ?UriInterface
     {
-        return new Uri($this->shutterstockData['assets']['preview']['url']);
+        return $this->image->getAssetPreview('preview')->getUrl();
     }
 
     public function getImportStream()
@@ -111,7 +114,7 @@ class ShutterstockAssetProxy implements AssetProxyInterface, HasRemoteOriginalIn
             return $this->removeImageId();
         }
 
-        return fopen($this->shutterstockData['assets']['preview']['url'], 'r');
+        return fopen($this->image->getAssetPreview('preview')->getUrl(), 'r');
     }
 
     /**
@@ -121,11 +124,11 @@ class ShutterstockAssetProxy implements AssetProxyInterface, HasRemoteOriginalIn
      */
     protected function removeImageId()
     {
-        $fileHandle = fopen($this->shutterstockData['assets']['preview']['url'], 'r');
+        $fileHandle = fopen($this->image->getAssetPreview('preview')->getUrl(), 'r');
         $image = $this->imagineService->read($fileHandle);
 
-        $width = $this->shutterstockData['assets']['preview']['width'];
-        $height = $this->shutterstockData['assets']['preview']['height'];
+        $width = $this->image->getAssetPreview('preview')->getWidth();
+        $height = $this->image->getAssetPreview('preview')->getHeight();
 
         $image->crop(new Point(0,0), new Box($width, $height));
         $string = $image->get('jpg');

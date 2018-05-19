@@ -1,11 +1,14 @@
 <?php
+
 namespace Vette\Shutterstock\Domain\Service;
 
 use GuzzleHttp\Client as GuzzleClient;
 use Neos\Flow\Annotations as Flow;
+use Vette\Shutterstock\Domain\Model\Shutterstock\Image;
+use Vette\Shutterstock\Domain\Model\Shutterstock\Result\ImageSearchResult;
 
 /**
- * Shutterstock Service
+ * Shutterstock Client
  *
  * @Flow\Scope("singleton")
  */
@@ -28,9 +31,9 @@ class ShutterstockClient
     protected $clientSecret;
 
     /**
-     * @var
+     * @var array
      */
-    protected $queryParams = array();
+    protected $defaultQueryParameters = array();
 
     /**
      * @var GuzzleClient
@@ -48,17 +51,14 @@ class ShutterstockClient
      *
      * @return GuzzleClient
      */
-    protected function getClient() : GuzzleClient
+    protected function getClient(): GuzzleClient
     {
         if ($this->client === null) {
             $this->client = new GuzzleClient([
-                'base_url' => [ $this->apiUrl,  []],
-                'defaults' => [
-                    'exceptions' => false,
-                    'headers' => [
-                        'Authorization' => 'Basic ' . $this->getAuthorizationHash(),
-                        'Accept'        => 'application/json'
-                    ]
+                'base_uri' => $this->apiUrl,
+                'headers' => [
+                    'Authorization' => 'Basic ' . $this->getAuthorizationHash(),
+                    'Accept' => 'application/json'
                 ]
             ]);
         }
@@ -71,57 +71,64 @@ class ShutterstockClient
      *
      * @return string
      */
-    protected function getAuthorizationHash()
+    protected function getAuthorizationHash(): string
     {
         return base64_encode(join(':', [$this->getClientKey(), $this->getClientSecret()]));
     }
 
     /**
-     * Query Shutterstock
+     * Executes a shutterstock image search
      *
      * @param ShutterstockQuery $query
-     * @return array
+     * @return ImageSearchResult
      */
-    public function query(ShutterstockQuery $query): array
+    public function searchImages(ShutterstockQuery $query): ImageSearchResult
     {
         if (isset($this->queryResponseCache[$query->getCacheEntryIdentifier()])) {
             return $this->queryResponseCache[$query->getCacheEntryIdentifier()];
         }
 
-        $queryParams = $this->getQueryParams();
-        if (isset($queryParams['imageType'])) {
-            $query->setImageType($queryParams['imageType']);
-        }
+        $query = $this->applyDefaultQueryParameters($query);
 
-        if (isset($queryParams['category'])) {
-            $query->setCategory($queryParams['category']);
-        }
-
-        if (isset($queryParams['safe'])) {
-            $query->setSafe($queryParams['safe']);
-        }
-
-        $response = $this->getClient()->get('images/search', ['query' => $query->getParamsArray()]);
+        $response = $this->getClient()->get('images/search', ['query' => $query->getParametersArray()]);
         $response = json_decode($response->getBody(), true);
-
         $this->queryResponseCache[$query->getCacheEntryIdentifier()] = $response;
 
-        return $response;
+        return ImageSearchResult::createFromResponse($response);
     }
 
     /**
      * Gets an image by id
      *
      * @param string $identifier
-     * @return \GuzzleHttp\Message\FutureResponse|\GuzzleHttp\Message\ResponseInterface|mixed|null
+     * @return Image
      */
-    public function getById(string $identifier)
+    public function getImageById(string $identifier): Image
     {
         $response = $this->getClient()->get('images/' . $identifier, [
             'query' => ['view' => 'full']
         ]);
+
         $response = json_decode($response->getBody(), true);
-        return $response;
+        return Image::createFromResponse($response);
+    }
+
+
+    /**
+     * Applies default query parameters
+     *
+     * @param ShutterstockQuery $query
+     * @return ShutterstockQuery
+     */
+    protected function applyDefaultQueryParameters(ShutterstockQuery $query): ShutterstockQuery
+    {
+        $query->setParameter('view', 'full');
+
+        foreach ($this->defaultQueryParameters as $name => $value) {
+            $query->setParameter($name, $value);
+        }
+
+        return $query;
     }
 
     /**
@@ -134,10 +141,12 @@ class ShutterstockClient
 
     /**
      * @param string $apiUrl
+     * @return self
      */
-    public function setApiUrl(string $apiUrl): void
+    public function setApiUrl(string $apiUrl): self
     {
         $this->apiUrl = $apiUrl;
+        return $this;
     }
 
     /**
@@ -150,10 +159,12 @@ class ShutterstockClient
 
     /**
      * @param string $clientKey
+     * @return self
      */
-    public function setClientKey(string $clientKey): void
+    public function setClientKey(string $clientKey): self
     {
         $this->clientKey = $clientKey;
+        return $this;
     }
 
     /**
@@ -166,25 +177,29 @@ class ShutterstockClient
 
     /**
      * @param string $clientSecret
+     * @return self
      */
-    public function setClientSecret(string $clientSecret): void
+    public function setClientSecret(string $clientSecret): self
     {
         $this->clientSecret = $clientSecret;
+        return $this;
     }
 
     /**
-     * @return mixed
+     * @return array
      */
-    public function getQueryParams()
+    public function getDefaultQueryParameters()
     {
-        return $this->queryParams;
+        return $this->defaultQueryParameters;
     }
 
     /**
-     * @param mixed $queryParams
+     * @param mixed $defaultQueryParameters
+     * @return self
      */
-    public function setQueryParams($queryParams): void
+    public function setDefaultQueryParameters($defaultQueryParameters): self
     {
-        $this->queryParams = $queryParams;
+        $this->defaultQueryParameters = $defaultQueryParameters;
+        return $this;
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 namespace Vette\Shutterstock\Domain\Service;
 
 /**
@@ -15,12 +16,12 @@ class ShutterstockQueryResult implements \Countable, \Iterator, \ArrayAccess
     /**
      * @var array
      */
-    protected $assets;
+    protected $data;
 
     /**
      * @var int
      */
-    protected $numberOfAssets;
+    protected $totalCount;
 
 
     /**
@@ -40,10 +41,10 @@ class ShutterstockQueryResult implements \Countable, \Iterator, \ArrayAccess
      */
     protected function initialize()
     {
-        if (!is_array($this->assets)) {
+        if (!is_array($this->data)) {
             $result = $this->query->getResult();
-            $this->assets = $result['data'];
-            $this->numberOfAssets = $this->query->count();
+            $this->data = $result->getData();
+            $this->totalCount = $result->getTotalCount();
         }
     }
 
@@ -51,7 +52,6 @@ class ShutterstockQueryResult implements \Countable, \Iterator, \ArrayAccess
      * Returns a clone of the query object
      *
      * @return ShutterstockQuery
-     * @api
      */
     public function getQuery()
     {
@@ -61,31 +61,31 @@ class ShutterstockQueryResult implements \Countable, \Iterator, \ArrayAccess
     public function current()
     {
         $this->initialize();
-        return current($this->assets);
+        return current($this->data);
     }
 
     public function next()
     {
         $this->initialize();
-        next($this->assets);
+        next($this->data);
     }
 
     public function key()
     {
         $this->initialize();
-        key($this->assets);
+        key($this->data);
     }
 
     public function valid()
     {
         $this->initialize();
-        return current($this->assets) !== false;
+        return current($this->data) !== false;
     }
 
     public function rewind()
     {
         $this->initialize();
-        reset($this->assets);
+        reset($this->data);
     }
 
     public function offsetExists($offset)
@@ -97,24 +97,24 @@ class ShutterstockQueryResult implements \Countable, \Iterator, \ArrayAccess
     public function offsetGet($offset)
     {
         $this->initialize();
-        return isset($this->queryResult[$offset]) ? $this->assets[$offset] : null;
+        return isset($this->queryResult[$offset]) ? $this->data[$offset] : null;
     }
 
     public function offsetSet($offset, $value)
     {
         $this->initialize();
-        $this->assets[$offset] = $value;
+        $this->data[$offset] = $value;
     }
 
     public function offsetUnset($offset)
     {
         $this->initialize();
-        unset($this->assets[$offset]);
+        unset($this->data[$offset]);
     }
 
     public function count()
     {
         $this->initialize();
-        return $this->numberOfAssets;
+        return $this->totalCount;
     }
 }

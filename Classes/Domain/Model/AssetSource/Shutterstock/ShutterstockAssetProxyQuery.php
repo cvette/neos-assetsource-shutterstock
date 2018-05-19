@@ -1,4 +1,5 @@
 <?php
+
 namespace Vette\Shutterstock\Domain\Model\AssetSource\Shutterstock;
 
 use Neos\Media\Domain\Model\AssetSource\AssetProxyQueryInterface;
@@ -37,33 +38,33 @@ class ShutterstockAssetProxyQuery implements AssetProxyQueryInterface
     public function setOffset(int $offset): void
     {
         $page = floor($offset / $this->getLimit()) + 1;
-        $this->shutterstockQuery->setPage($page);
+        $this->shutterstockQuery->setParameter('page', $page);
     }
 
     public function getOffset(): int
     {
-        $page = $this->shutterstockQuery->getPage();
+        $page = $this->shutterstockQuery->getParameter('page');
         return $page * $this->getLimit() + 1;
     }
 
     public function setLimit(int $limit): void
     {
-        $this->shutterstockQuery->setPerPage($limit);
+        $this->shutterstockQuery->setParameter('per_page', $limit);
     }
 
     public function getLimit(): int
     {
-        return $this->shutterstockQuery->getPerPage();
+        return $this->shutterstockQuery->getParameter('per_page');
     }
 
     public function setSearchTerm(string $searchTerm)
     {
-        $this->shutterstockQuery->setQuery($searchTerm);
+        $this->shutterstockQuery->setParameter('query', $searchTerm);
     }
 
     public function getSearchTerm()
     {
-        return $this->shutterstockQuery->getQuery();
+        return $this->shutterstockQuery->getParameter('query');
     }
 
     public function execute(): AssetProxyQueryResultInterface

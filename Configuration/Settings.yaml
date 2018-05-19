@@ -7,5 +7,5 @@ Neos:
           label: Shutterstock Preview
           clientKey: client-key
           clientSecret: client-secret
-          queryParams:
-            imageType: photo
+          imageSearch:
+            image_type: photo

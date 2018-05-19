@@ -4,6 +4,7 @@ namespace Vette\Shutterstock\Domain\Model\AssetSource\Shutterstock;
 use Neos\Media\Domain\Model\AssetSource\AssetProxy\AssetProxyInterface;
 use Neos\Media\Domain\Model\AssetSource\AssetProxyQueryInterface;
 use Neos\Media\Domain\Model\AssetSource\AssetProxyQueryResultInterface;
+use Vette\Shutterstock\Domain\Model\Shutterstock\Image;
 use Vette\Shutterstock\Domain\Service\ShutterstockQueryResult;
 
 /**
@@ -54,9 +55,9 @@ class ShutterstockAssetProxyQueryResult implements AssetProxyQueryResultInterfac
 
     public function current(): ?AssetProxyInterface
     {
-        $data = $this->shutterstockQueryResult->current();
-        if (is_array($data)) {
-            return new ShutterstockAssetProxy($data, $this->assetSource);
+        $image = $this->shutterstockQueryResult->current();
+        if ($image instanceof Image) {
+            return new ShutterstockAssetProxy($image, $this->assetSource);
         } else {
             return null;
         }
@@ -106,9 +107,15 @@ class ShutterstockAssetProxyQueryResult implements AssetProxyQueryResultInterfac
         throw new \RuntimeException('Unsupported operation: ' . __METHOD__, 1510060444);
     }
 
+    /**
+     * shutterstock API limits the result to 1000 images
+     *
+     * @return int
+     */
     public function count()
     {
-        return $this->shutterstockQueryResult->count();
+        $count = $this->shutterstockQueryResult->count();
+        return $count > 1000 ? 1000 : $count ;
     }
 
 }

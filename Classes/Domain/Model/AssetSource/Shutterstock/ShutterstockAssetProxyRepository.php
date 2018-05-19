@@ -1,12 +1,12 @@
 <?php
 namespace Vette\Shutterstock\Domain\Model\AssetSource\Shutterstock;
 
+use Vette\Shutterstock\Domain\Service\ShutterstockQuery;
 use Neos\Media\Domain\Model\AssetSource\AssetProxy\AssetProxyInterface;
 use Neos\Media\Domain\Model\AssetSource\AssetProxyQueryResultInterface;
 use Neos\Media\Domain\Model\AssetSource\AssetProxyRepositoryInterface;
 use Neos\Media\Domain\Model\AssetSource\AssetTypeFilter;
 use Neos\Media\Domain\Model\Tag;
-use Vette\Shutterstock\Domain\Service\ShutterstockQuery;
 
 /**
  * Shutterstock AssetProxy Repository
@@ -38,8 +38,8 @@ class ShutterstockAssetProxyRepository implements AssetProxyRepositoryInterface
      */
     public function getAssetProxy(string $identifier): AssetProxyInterface
     {
-        $data = $this->assetSource->getClient()->getById($identifier);
-        return new ShutterstockAssetProxy($data, $this->assetSource);
+        $image = $this->assetSource->getClient()->getImageById($identifier);
+        return new ShutterstockAssetProxy($image, $this->assetSource);
     }
 
     /**
@@ -72,7 +72,7 @@ class ShutterstockAssetProxyRepository implements AssetProxyRepositoryInterface
     public function findBySearchTerm(string $searchTerm): AssetProxyQueryResultInterface
     {
         $query = new ShutterstockQuery();
-        $query->setQuery($searchTerm);
+        $query->setParameter('query', $searchTerm);
         return new ShutterstockAssetProxyQueryResult($query->execute(), $this->assetSource);
     }
 

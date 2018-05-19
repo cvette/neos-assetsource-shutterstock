@@ -63,8 +63,8 @@ class ShutterstockAssetSource implements AssetSourceInterface
             $this->shutterstockClient->setApiUrl($this->assetSourceOptions['apiUrl']);
         }
 
-        if (isset($this->assetSourceOptions['queryParams'])) {
-            $this->shutterstockClient->setQueryParams($this->assetSourceOptions['queryParams']);
+        if (isset($this->assetSourceOptions['imageSearch'])) {
+            $this->shutterstockClient->setDefaultQueryParameters($this->assetSourceOptions['imageSearch']);
         }
 
         if (isset($this->assetSourceOptions['removeImageIdFromPreview'])) {
@@ -146,7 +146,7 @@ class ShutterstockAssetSource implements AssetSourceInterface
     }
 
     /**
-     * @param bool $removeImageDetailsFromPreview
+     * @param bool $removeImageIdFromPreview
      */
     public function setRemoveImageIdFromPreview(bool $removeImageIdFromPreview): void
     {
